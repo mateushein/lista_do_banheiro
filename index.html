@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Fila do Banheiro</title>
+<link rel="icon" href="101" type="image/png">
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+body{
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(160deg,#021024,#052659,#1B3C73,#5483B3);
+color:white;
+}
+
+/* DRAGÃO DE FUNDO */
+
+body::before{
+content:"";
+position:fixed;
+inset:0;
+
+background-image:url("dragon.png");
+background-repeat:no-repeat;
+background-position:center;
+background-size:500px;
+
+opacity:0.15;
+
+animation:energiaDragao 6s infinite ease-in-out;
+
+pointer-events:none;
+}
+
+@keyframes energiaDragao{
+
+0%{
+filter:drop-shadow(0 0 10px rgba(120,180,255,0.2));
+}
+
+50%{
+filter:drop-shadow(0 0 40px rgba(120,180,255,0.7));
+}
+
+100%{
+filter:drop-shadow(0 0 10px rgba(120,180,255,0.2));
+}
+
+}
+
+/* PAINEL */
+
+.container{
+width:760px;
+padding:35px;
+border-radius:14px;
+background:rgba(255,255,255,0.06);
+backdrop-filter:blur(10px);
+box-shadow:0 0 40px rgba(0,140,255,0.25);
+}
+
+h1{
+text-align:center;
+margin-bottom:25px;
+color:#9ED5FF;
+letter-spacing:2px;
+}
+
+/* CONTROLES */
+
+.controls{
+display:flex;
+gap:10px;
+justify-content:center;
+margin-bottom:20px;
+}
+
+select,button{
+padding:10px;
+border-radius:6px;
+border:none;
+font-size:15px;
+}
+
+/* SELECT */
+
+select{
+background:#021024;
+color:white;
+border:1px solid #5483B3;
+}
+
+/* BOTÕES */
+
+button{
+background:#1B3C73;
+color:white;
+cursor:pointer;
+transition:all 0.25s ease;
+}
+
+/* EFEITO LUZ */
+
+button:hover{
+
+background:#3A6EA5;
+
+box-shadow:
+0 0 10px rgba(79,195,247,0.7),
+0 0 20px rgba(79,195,247,0.5),
+0 0 35px rgba(79,195,247,0.4);
+
+transform:translateY(-2px);
+
+}
+
+/* STATUS */
+
+.status{
+text-align:center;
+margin-bottom:20px;
+padding:12px;
+background:#0B2447;
+border-radius:8px;
+}
+
+.status span{
+color:#8FD3FF;
+font-weight:bold;
+}
+
+/* LISTAS */
+
+.area{
+display:flex;
+gap:30px;
+}
+
+.lista{
+flex:1;
+background:rgba(0,0,0,0.25);
+padding:15px;
+border-radius:10px;
+}
+
+.lista h2{
+margin-bottom:10px;
+color:#8FD3FF;
+}
+
+li{
+list-style:none;
+background:#0B2447;
+padding:7px;
+margin:6px 0;
+border-radius:6px;
+border-left:4px solid #4FC3F7;
+}
+
+/* DESTAQUE PARA MUITAS VEZES */
+
+.alerta{
+background:#0a2a55;
+border-left:4px solid #4FC3F7;
+color:#a8d8ff;
+font-weight:bold;
+
+animation:pulsar 2.5s infinite;
+}
+
+@keyframes pulsar{
+
+0%{
+box-shadow:
+0 0 5px rgba(79,195,247,0.4),
+0 0 10px rgba(79,195,247,0.3);
+}
+
+50%{
+box-shadow:
+0 0 18px rgba(79,195,247,0.9),
+0 0 35px rgba(79,195,247,0.6);
+}
+
+100%{
+box-shadow:
+0 0 5px rgba(79,195,247,0.4),
+0 0 10px rgba(79,195,247,0.3);
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Fila do Banheiro</h1>
+
+<div class="controls">
+
+<select id="alunos"></select>
+
+<button onclick="entrarFila()">Entrar na fila</button>
+<button onclick="proximo()">Próximo</button>
+<button onclick="saiuBanheiro()">Saiu do banheiro</button>
+
+</div>
+
+<div class="status">
+Aluno no banheiro: <span id="alunoBanheiro">Nenhum</span><br>
+Tempo fora: <span id="tempo">00:00</span>
+</div>
+
+<div class="area">
+
+<div class="lista">
+<h2>Fila</h2>
+<ul id="fila"></ul>
+</div>
+
+<div class="lista">
+<h2>Vezes que foi ao banheiro</h2>
+<ul id="vezes"></ul>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let listaAlunos=[
+
+"Alex Caio Wastowski Vargas",
+"Alexandre Wilmuth Schultz",
+"Amanda Cristina Schmidt",
+"Andressa Vitoria Kamien",
+"Andrielle Stefan",
+"Anna Vitória Kriesel Pich",
+"Barbara Giovana Rosler",
+"Bernardo Batirola Pinto",
+"Bruno Francisco Danzer de Lima",
+"Carlos Eduardo Friedrich",
+"Cauana Julha Tampke",
+"Daniel Frederico Vieira",
+"Daniel Santiago Silveira",
+"Dgiovana Hermann Leal",
+"Eduardo Augusto Schulz Schwartz",
+"Elisangela Castanho Ferreira",
+"Estefani Castanho Ferreira",
+"Gabriel Bertolo Bayer",
+"Isabeli Ferraz Gelbhard",
+"Isadora Kuyven da Silva",
+"Jezebel Talita Schmidt",
+"Juliano Machado de Oliveira",
+"Luciano Michel Alves Mittelstadt",
+"Maria Eduarda Corso da Silva",
+"Maria Eduarda Tampke",
+"Mateus Henrique Hein",
+"Mateus Junior Hoffmann Engel",
+"Nicolas Eduardo Pitsch Correa",
+"Norton Elias Asseinheimer Eisen",
+"Pamela Gabrielly Radke",
+"Rafaeli Alves dos Santos",
+"Roberty Willian Groff",
+"Salatiel Bouchet dos Santos",
+"Sinara Oliveira Pinto"
+
+];
+
+let fila=[];
+let vezesBanheiro={};
+
+let alunoAtual=null;
+let tempoInicio=null;
+
+let select=document.getElementById("alunos");
+
+listaAlunos.forEach(aluno=>{
+let option=document.createElement("option");
+option.value=aluno;
+option.textContent=aluno;
+select.appendChild(option);
+});
+
+function atualizarFila(){
+
+let lista=document.getElementById("fila");
+lista.innerHTML="";
+
+fila.forEach(aluno=>{
+let li=document.createElement("li");
+li.textContent=aluno;
+lista.appendChild(li);
+});
+
+}
+
+function atualizarVezes(){
+
+let lista=document.getElementById("vezes");
+lista.innerHTML="";
+
+for(let aluno in vezesBanheiro){
+
+let li=document.createElement("li");
+li.textContent=aluno+" : "+vezesBanheiro[aluno];
+
+if(vezesBanheiro[aluno] >= 3){
+li.classList.add("alerta");
+}
+
+lista.appendChild(li);
+
+}
+
+}
+
+function entrarFila(){
+
+let aluno=select.value;
+
+if(!fila.includes(aluno)){
+fila.push(aluno);
+atualizarFila();
+}
+
+}
+
+function proximo(){
+
+if(alunoAtual!=null){
+alert("Já tem alguém no banheiro");
+return;
+}
+
+if(fila.length===0){
+alert("Fila vazia");
+return;
+}
+
+alunoAtual=fila.shift();
+tempoInicio=Date.now();
+
+document.getElementById("alunoBanheiro").textContent=alunoAtual;
+
+atualizarFila();
+
+}
+
+function saiuBanheiro(){
+
+if(alunoAtual==null) return;
+
+if(!vezesBanheiro[alunoAtual]){
+vezesBanheiro[alunoAtual]=0;
+}
+
+vezesBanheiro[alunoAtual]++;
+
+alunoAtual=null;
+tempoInicio=null;
+
+document.getElementById("alunoBanheiro").textContent="Nenhum";
+document.getElementById("tempo").textContent="00:00";
+
+atualizarVezes();
+
+}
+
+function atualizarTempo(){
+
+if(tempoInicio==null) return;
+
+let segundos=Math.floor((Date.now()-tempoInicio)/1000);
+
+let min=Math.floor(segundos/60);
+let seg=segundos%60;
+
+if(seg<10) seg="0"+seg;
+if(min<10) min="0"+min;
+
+document.getElementById("tempo").textContent=min+":"+seg;
+
+}
+
+setInterval(atualizarTempo,1000);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Fila do Banheiro</title>
+<link rel="icon" href="101" type="image/png">
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+body{
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(160deg,#021024,#052659,#1B3C73,#5483B3);
+color:white;
+}
+
+/* DRAGÃO DE FUNDO */
+
+body::before{
+content:"";
+position:fixed;
+inset:0;
+
+background-image:url("dragon.png");
+background-repeat:no-repeat;
+background-position:center;
+background-size:500px;
+
+opacity:0.15;
+
+filter:drop-shadow(0 0 25px rgba(120,180,255,0.4));
+
+pointer-events:none;
+}
+
+/* PAINEL */
+
+.container{
+width:760px;
+padding:35px;
+border-radius:14px;
+background:rgba(255,255,255,0.06);
+backdrop-filter:blur(10px);
+box-shadow:0 0 40px rgba(0,140,255,0.25);
+}
+
+h1{
+text-align:center;
+margin-bottom:25px;
+color:#9ED5FF;
+letter-spacing:2px;
+}
+
+/* CONTROLES */
+
+.controls{
+display:flex;
+gap:10px;
+justify-content:center;
+margin-bottom:20px;
+}
+
+select,button{
+padding:10px;
+border-radius:6px;
+border:none;
+font-size:15px;
+}
+
+select{
+background:#021024;
+color:white;
+border:1px solid #5483B3;
+}
+
+button{
+background:#1B3C73;
+color:white;
+cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+background:#3A6EA5;
+transform:translateY(-1px);
+}
+
+/* STATUS */
+
+.status{
+text-align:center;
+margin-bottom:20px;
+padding:12px;
+background:#0B2447;
+border-radius:8px;
+}
+
+.status span{
+color:#8FD3FF;
+font-weight:bold;
+}
+
+/* LISTAS */
+
+.area{
+display:flex;
+gap:30px;
+}
+
+.lista{
+flex:1;
+background:rgba(0,0,0,0.25);
+padding:15px;
+border-radius:10px;
+}
+
+.lista h2{
+margin-bottom:10px;
+color:#8FD3FF;
+}
+
+li{
+list-style:none;
+background:#0B2447;
+padding:7px;
+margin:6px 0;
+border-radius:6px;
+border-left:4px solid #4FC3F7;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🐉 Fila do Banheiro</h1>
+
+<div class="controls">
+
+<select id="alunos"></select>
+
+<button onclick="entrarFila()">Entrar na fila</button>
+<button onclick="proximo()">Próximo</button>
+<button onclick="saiuBanheiro()">Saiu do banheiro</button>
+
+</div>
+
+<div class="status">
+Aluno no banheiro: <span id="alunoBanheiro">Nenhum</span><br>
+Tempo fora: <span id="tempo">00:00</span>
+</div>
+
+<div class="area">
+
+<div class="lista">
+<h2>Fila</h2>
+<ul id="fila"></ul>
+</div>
+
+<div class="lista">
+<h2>Vezes que foi ao banheiro</h2>
+<ul id="vezes"></ul>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ALUNOS */
+
+let listaAlunos=[
+"Aluno 1","Aluno 2","Aluno 3","Aluno 4","Aluno 5","Aluno 6","Aluno 7","Aluno 8","Aluno 9","Aluno 10",
+"Aluno 11","Aluno 12","Aluno 13","Aluno 14","Aluno 15","Aluno 16","Aluno 17","Aluno 18","Aluno 19","Aluno 20",
+"Aluno 21","Aluno 22","Aluno 23","Aluno 24","Aluno 25","Aluno 26","Aluno 27","Aluno 28","Aluno 29","Aluno 30",
+"Aluno 31","Aluno 32","Aluno 33","Aluno 34"
+];
+
+let fila=[];
+let vezesBanheiro={};
+
+let alunoAtual=null;
+let tempoInicio=null;
+
+let select=document.getElementById("alunos");
+
+/* CRIAR MENU */
+
+listaAlunos.forEach(aluno=>{
+let option=document.createElement("option");
+option.value=aluno;
+option.textContent=aluno;
+select.appendChild(option);
+});
+
+/* ATUALIZAR FILA */
+
+function atualizarFila(){
+
+let lista=document.getElementById("fila");
+lista.innerHTML="";
+
+fila.forEach(aluno=>{
+let li=document.createElement("li");
+li.textContent=aluno;
+lista.appendChild(li);
+});
+
+}
+
+/* ATUALIZAR CONTADOR */
+
+function atualizarVezes(){
+
+let lista=document.getElementById("vezes");
+lista.innerHTML="";
+
+for(let aluno in vezesBanheiro){
+
+let li=document.createElement("li");
+li.textContent=aluno+" : "+vezesBanheiro[aluno];
+lista.appendChild(li);
+
+}
+
+}
+
+/* ENTRAR NA FILA */
+
+function entrarFila(){
+
+let aluno=select.value;
+
+if(!fila.includes(aluno)){
+fila.push(aluno);
+atualizarFila();
+}
+
+}
+
+/* CHAMAR PRÓXIMO */
+
+function proximo(){
+
+if(alunoAtual!=null){
+alert("Já tem alguém no banheiro");
+return;
+}
+
+if(fila.length===0){
+alert("Fila vazia");
+return;
+}
+
+alunoAtual=fila.shift();
+tempoInicio=Date.now();
+
+document.getElementById("alunoBanheiro").textContent=alunoAtual;
+
+atualizarFila();
+
+}
+
+/* SAIR DO BANHEIRO */
+
+function saiuBanheiro(){
+
+if(alunoAtual==null) return;
+
+if(!vezesBanheiro[alunoAtual]){
+vezesBanheiro[alunoAtual]=0;
+}
+
+vezesBanheiro[alunoAtual]++;
+
+alunoAtual=null;
+tempoInicio=null;
+
+document.getElementById("alunoBanheiro").textContent="Nenhum";
+document.getElementById("tempo").textContent="00:00";
+
+atualizarVezes();
+
+}
+
+/* CONTADOR DE TEMPO */
+
+function atualizarTempo(){
+
+if(tempoInicio==null) return;
+
+let segundos=Math.floor((Date.now()-tempoInicio)/1000);
+
+let min=Math.floor(segundos/60);
+let seg=segundos%60;
+
+if(seg<10) seg="0"+seg;
+if(min<10) min="0"+min;
+
+document.getElementById("tempo").textContent=min+":"+seg;
+
+}
+
+setInterval(atualizarTempo,1000);
+
+</script>
+
+</body>
+</html>
